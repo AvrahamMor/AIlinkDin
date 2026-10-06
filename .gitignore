@@ -1,0 +1,49 @@
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Environment variables & credentials
+.env
+.env.local
+.env.*
+!.env.example
+
+# Local storage, session cookies, user profiles & uploads
+backend/storage/*
+!backend/storage/.gitkeep
+!backend/storage/uploads/
+backend/storage/uploads/*
+!backend/storage/uploads/.gitkeep
+
+# Live browser screenshots and debug captures
+*.png
+*.jpg
+*.jpeg
+frontend/static/live_browser.jpg
+
+# Playwright & test reports
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# IDE & Editor settings
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+Thumbs.db
+Desktop.ini

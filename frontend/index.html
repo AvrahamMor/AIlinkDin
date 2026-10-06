@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NorthHunter AI | סוכן משרות והגשות אוטונומי - אזור הצפון</title>
+  <!-- Google Fonts: Heebo -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css?v=3.0">
+</head>
+<body>
+
+  <!-- Floating Toast Notifications -->
+  <div id="toastContainer"></div>
+
+  <!-- Top Navigation Header -->
+  <header class="glass">
+    <div class="logo-area">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+        </svg>
+      </div>
+      <div class="logo-text">
+        <h1>NorthHunter AI</h1>
+        <p>סוכן אוטונומי לאיתור והגשת משרות הייטק בצפון (חיפה, יקנעם, כרמיאל והגליל)</p>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <div class="status-badge" id="botStatusBadge">
+        <span class="status-dot"></span>
+        <span id="botStatusText">סוכן מוכן לפעולה</span>
+      </div>
+
+      <!-- Emergency Stop Button -->
+      <button class="btn btn-danger" id="btnStopBot" title="עצירת חירום מיידית של הסוכן, סגירת כל הדפדפנים ושחרור המחשב">
+        <span style="font-size: 1rem; line-height: 1;">🛑</span>
+        <span>עצור סוכן</span>
+      </button>
+
+      <!-- Clean Expired Jobs Button -->
+      <button class="btn btn-secondary" id="btnCleanExpired" title="סריקה והסרה של משרות שנסגרו או שפג תוקפן בלינקדאין">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="3 6 5 6 21 6"></polyline>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+        </svg>
+        <span>נקה משרות שנסגרו</span>
+      </button>
+
+      <!-- Clear All Jobs Button -->
+      <button class="btn btn-secondary" id="btnClearAllJobs" title="מחיקת כל המשרות המוצגות כדי להתחיל סריקה נקייה">
+        <span style="font-size: 1rem; line-height: 1;">🗑️</span>
+        <span>נקה הכל</span>
+      </button>
+
+      <button class="btn btn-secondary" id="btnOpenLogin" title="פתיחת דפדפן מאובטח להתחברות חד-פעמית ללינקדאין">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+        <span>חיבור לינקדאין</span>
+      </button>
+
+      <button class="btn btn-secondary" id="btnAddManualJob">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        <span>הוסף קישור משרה</span>
+      </button>
+
+      <!-- Refresh Jobs Button -->
+      <button class="btn btn-secondary" id="btnRefreshJobs" title="רענן רשימת משרות וסנכרון סטטוסים (מעביר משרות שהוגשו ל'הוגשו')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <polyline points="1 20 1 14 7 14"></polyline>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+        </svg>
+        <span>רענן משרות</span>
+      </button>
+
+      <button class="btn btn-primary" id="btnScanJobs">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <span>סרוק משרות בצפון</span>
+      </button>
+
+      <button class="btn btn-secondary btn-icon" id="btnOpenSettings" title="הגדרות">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-wrapper">
+
+    <!-- KPI Stats Cards -->
+    <section class="stats-grid">
+      <div class="stat-card glass glass-hover">
+        <div class="stat-info">
+          <h3>משרות פעילות בצפון</h3>
+          <div class="stat-number" id="statTotalJobs">0</div>
+        </div>
+        <div class="stat-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+            <circle cx="12" cy="10" r="3"></circle>
+          </svg>
+        </div>
+      </div>
+
+      <div class="stat-card glass glass-hover" id="cardPendingJobs" style="cursor: pointer;" title="לחץ לצפייה במשרות שממתינות לאישורך">
+        <div class="stat-info">
+          <h3>ממתינות לאישורך להגשה</h3>
+          <div class="stat-number" id="statPendingJobs" style="color: #fbbf24;">0</div>
+        </div>
+        <div class="stat-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+        </div>
+      </div>
+
+      <div class="stat-card glass glass-hover" id="cardAppliedJobs" style="cursor: pointer;" title="לחץ למעבר למסך המשרות שהוגשו">
+        <div class="stat-info">
+          <h3>הוגשו בהצלחה</h3>
+          <div class="stat-number" id="statAppliedJobs" style="color: #34d399;">0</div>
+        </div>
+        <div class="stat-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </div>
+      </div>
+
+      <div class="stat-card glass glass-hover">
+        <div class="stat-info">
+          <h3>התאמת מיומנויות גבוהה (80%+)</h3>
+          <div class="stat-number" id="statHighMatch" style="color: #a78bfa;">0</div>
+        </div>
+        <div class="stat-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- Navigation Tabs -->
+    <nav class="tabs-nav">
+      <button class="tab-btn active" data-tab="jobs">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+        <span>מרכז משרות וסוכן</span>
+      </button>
+      <button class="tab-btn" data-tab="profile">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        <span>פרופיל מועמד וקורות חיים</span>
+      </button>
+      <button class="tab-btn" data-tab="applications">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+        <span>היסטוריית הגשות</span>
+      </button>
+      <button class="tab-btn" data-tab="terminal">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
+        <span>מסוף סוכן בזמן אמת (Live Logs)</span>
+      </button>
+    </nav>
+
+    <!-- Tab 1: Jobs Hub -->
+    <div class="tab-content" id="tabJobs">
+      <!-- Filter Bar -->
+      <div class="filter-bar glass">
+        <div class="filter-group">
+          <input type="text" class="input-field" id="searchKeyword" placeholder="חיפוש לפי כותרת או חברה..." style="min-width: 240px;">
+          
+          <select class="select-field" id="filterCity">
+            <option value="">כל אזורי הצפון</option>
+            <option value="חיפה">חיפה ומת"ם</option>
+            <option value="יקנעם">יקנעם עילית</option>
+            <option value="כרמיאל">כרמיאל וגליל</option>
+            <option value="נשר">נשר והקריות</option>
+            <option value="היברידי">היברידי / גמיש</option>
+          </select>
+
+          <select class="select-field" id="filterStatus" style="font-weight: 600;">
+            <option value="pending_approval" selected>📋 ממתינות לאישור והגשה</option>
+            <option value="applied">✅ הוגשו בהצלחה</option>
+            <option value="">כל המשרות</option>
+          </select>
+
+          <!-- Easy Apply Filter Toggle -->
+          <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; background: rgba(6, 182, 212, 0.12); border: 1px solid rgba(6, 182, 212, 0.35); padding: 0.45rem 0.85rem; border-radius: var(--radius-md); user-select: none;">
+            <input type="checkbox" id="filterEasyApplyOnly" checked style="accent-color: var(--accent-cyan); width: 16px; height: 16px; cursor: pointer;">
+            <span style="font-weight: 700; font-size: 0.85rem; color: var(--accent-cyan);">⚡ Easy Apply בלבד</span>
+          </label>
+        </div>
+
+        <div class="filter-group">
+          <label style="font-size: 0.85rem; color: var(--text-secondary);">ציון התאמה מינימלי:</label>
+          <input type="range" id="filterScore" min="30" max="95" value="50" step="5" style="accent-color: var(--accent-cyan); cursor: pointer;">
+          <span id="scoreValDisplay" style="font-weight: 700; color: var(--accent-cyan);">50%</span>
+
+          <button class="btn btn-secondary" id="btnRefreshJobsFilter" style="padding: 0.4rem 0.85rem; font-size: 0.85rem; display: flex; align-items: center; gap: 0.4rem;" title="רענן משרות וסנכרון סטטוסים">
+            <span>🔄</span>
+            <span>רענן משרות</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Jobs Grid -->
+      <div class="jobs-grid" id="jobsContainer">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+
+    <!-- Tab 2: Profile & CV -->
+    <div class="tab-content" id="tabProfile" style="display: none;">
+      <div class="glass" style="padding: 2rem; border-radius: var(--radius-xl); margin-bottom: 2rem;">
+        <h2 style="font-size: 1.3rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          <span>העלאת קורות חיים (PDF) וניתוח AI אוטומטי</span>
+        </h2>
+        
+        <div id="dropZone" style="border: 2px dashed rgba(56, 189, 248, 0.4); border-radius: var(--radius-lg); padding: 2.5rem; text-align: center; cursor: pointer; transition: all 0.2s ease; background: rgba(6, 182, 212, 0.03);">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.8" style="margin-bottom: 1rem;">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="12" y1="18" x2="12" y2="12"></line>
+            <line x1="9" y1="15" x2="15" y2="15"></line>
+          </svg>
+          <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem;">גרור לכאן את קובץ קורות החיים שלך (PDF) או לחץ לבחירה</h3>
+          <p style="font-size: 0.85rem; color: var(--text-secondary);">הסוכן יקרא את הקובץ אוטומטית, יחלץ את הניסיון והמיומנויות, ויצרף אותו לכל הגשה</p>
+          <input type="file" id="cvFileInput" accept=".pdf" style="display: none;">
+          <div id="uploadedCvBadge" style="margin-top: 1rem; display: none;">
+            <span class="status-badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399; font-size: 0.9rem; padding: 0.5rem 1rem;">
+              ✓ קובץ פעיל במערכת: <strong id="currentCvName" style="margin-right: 4px;"></strong>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass" style="padding: 2rem; border-radius: var(--radius-xl);">
+        <h2 style="font-size: 1.3rem; margin-bottom: 1.5rem;">פרטי המועמד עבור טפסי הגשת המועמדות</h2>
+        
+        <form id="profileForm" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
+          <div>
+            <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.35rem;">שם מלא</label>
+            <input type="text" id="profFullName" class="input-field" style="width: 100%;" required>
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.35rem;">דוא"ל</label>
+            <input type="email" id="profEmail" class="input-field" style="width: 100%;" required>
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.35rem;">טלפון נייד</label>
+            <input type="tel" id="profPhone" class="input-field" style="width: 100%;" required>
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.35rem;">עיר מגורים בצפון</label>
+            <input type="text" id="profCity" class="input-field" style="width: 100%;" placeholder="למשל: חיפה, נשר, כרמיאל, יקנעם" required>
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.35rem;">תפקיד מבוקש / כותרת מקצועית</label>
+            <input type="text" id="profTitle" class="input-field" style="width: 100%;" placeholder="Full Stack Developer" required>
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.35rem;">שנות ניסיון</label>
+            <input type="number" id="profYears" class="input-field" style="width: 100%;" min="0" max="30" value="3">
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.35rem;">פרופיל לינקדאין</label>
+            <input type="url" id="profLinkedIn" class="input-field" style="width: 100%;" placeholder="https://www.linkedin.com/in/username">
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.35rem;">פרופיל GitHub</label>
+            <input type="url" id="profGitHub" class="input-field" style="width: 100%;" placeholder="https://github.com/username">
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.35rem;">ציפיות שכר</label>
+            <input type="text" id="profSalary" class="input-field" style="width: 100%;" placeholder="25,000 - 30,000 ₪">
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.35rem;">זמינות / הודעה מוקדמת</label>
+            <input type="text" id="profNotice" class="input-field" style="width: 100%;" placeholder="מיידי / חודש">
+          </div>
+
+          <div style="grid-column: 1 / -1;">
+            <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.35rem;">מיומנויות וטכנולוגיות (מופרדות בפסיקים)</label>
+            <input type="text" id="profSkills" class="input-field" style="width: 100%;" placeholder="Python, React, TypeScript, Node.js, SQL, Docker, AWS">
+          </div>
+
+          <div style="grid-column: 1 / -1;">
+            <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.35rem;">תקציר מקצועי (Summary)</label>
+            <textarea id="profSummary" class="input-field" rows="3" style="width: 100%; resize: vertical;"></textarea>
+          </div>
+
+          <div style="grid-column: 1 / -1; display: flex; justify-content: flex-end; margin-top: 1rem;">
+            <button type="submit" class="btn btn-primary" style="padding: 0.75rem 2rem;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+              <span>שמור פרטי פרופיל</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Tab 3: Applications History -->
+    <div class="tab-content" id="tabApplications" style="display: none;">
+      <div class="glass" style="padding: 2rem; border-radius: var(--radius-xl);">
+        <h2 style="font-size: 1.3rem; margin-bottom: 1.5rem;">תיעוד הגשות שבוצעו על ידי הסוכן</h2>
+        <div id="applicationsTableWrapper" style="overflow-x: auto;">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 4: Live Terminal & Visual Browser Screen -->
+    <div class="tab-content" id="tabTerminal" style="display: none;">
+      <div class="live-monitor-grid">
+        <!-- Live Browser Stream Window -->
+        <div class="browser-screen-window glass">
+          <div class="terminal-header">
+            <div class="terminal-dots">
+              <span class="terminal-dot dot-red"></span>
+              <span class="terminal-dot dot-yellow"></span>
+              <span class="terminal-dot dot-green"></span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.82rem; font-weight: 600; color: #e2e8f0;">
+              <span class="live-pulse-dot"></span>
+              <span>שידור מסך הדפדפן בזמן אמת (Live Visual View)</span>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+              <button class="btn btn-primary" id="btnContinueForm" style="padding: 0.2rem 0.6rem; font-size: 0.75rem; background: linear-gradient(135deg, #3b82f6, #06b6d4); color: white;" title="מילוי שדות הטופס ומעבר לשלב הבא">⚡ המשך מילוי</button>
+              <button class="btn btn-secondary" id="btnRefreshScreen" style="padding: 0.2rem 0.6rem; font-size: 0.75rem;">רענן תמונה</button>
+            </div>
+          </div>
+          <div class="browser-screen-body" id="browserScreenBody">
+            <img id="liveBrowserImg" src="" alt="שידור חי של פעילות הדפדפן" style="display: none;" onerror="this.style.display='none'; document.getElementById('browserScreenPlaceholder').style.display='flex';" onload="if(this.src && !this.src.endsWith('/')) { this.style.display='block'; document.getElementById('browserScreenPlaceholder').style.display='none'; }" />
+            <div id="browserScreenPlaceholder" class="browser-placeholder" style="display: flex;">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.6" style="margin-bottom: 0.75rem;">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+                <line x1="12" y1="17" x2="12" y2="21"></line>
+              </svg>
+              <h4 style="margin: 0 0 0.4rem 0; font-size: 1rem; color: #fff;">הדפדפן בהמתנה לפקודה הבאה</h4>
+              <p style="font-size: 0.82rem; color: var(--text-secondary); max-width: 420px; line-height: 1.5; margin: 0;">כאשר תפעיל סריקה או הגשה למשרה, תראה כאן בשידור חי כל שלב בדפדפן - פתיחת דף, מילוי פרטים ולחיצות!</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Terminal Execution Logs Window -->
+        <div class="terminal-window">
+          <div class="terminal-header">
+            <div class="terminal-dots">
+              <span class="terminal-dot dot-red"></span>
+              <span class="terminal-dot dot-yellow"></span>
+              <span class="terminal-dot dot-green"></span>
+            </div>
+            <div style="font-size: 0.8rem; color: #94a3b8; font-family: monospace;">NorthHunter Bot Execution Engine (Playwright & AI)</div>
+            <button class="btn btn-secondary" id="btnClearLogs" style="padding: 0.2rem 0.6rem; font-size: 0.75rem;">נקה מסך</button>
+          </div>
+          <div class="terminal-body" id="terminalLogs">
+            <div class="log-line log-info">[00:00:00] מסוף הסוכן אותחל בהצלחה. ממתין לפקודות סריקה והגשה...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Modal: Review & Submit Application -->
+  <div class="modal-overlay" id="reviewModal">
+    <div class="modal-window">
+      <div class="modal-header">
+        <div>
+          <h2 id="modalJobTitle" style="font-size: 1.25rem; font-weight: 700;">אישור מועמדות למשרה</h2>
+          <p id="modalJobCompany" style="font-size: 0.85rem; color: var(--text-secondary);"></p>
+        </div>
+        <button class="modal-close" id="btnCloseReviewModal">&times;</button>
+      </div>
+
+      <div style="margin-bottom: 1.5rem;">
+        <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem;">
+          <div class="match-badge high-match" id="modalMatchBadge" style="width: 65px; height: 65px;">
+            <span class="score-val" id="modalMatchScore">--%</span>
+            <span class="score-lbl">התאמה</span>
+          </div>
+          <div>
+            <div style="font-weight: 600; font-size: 0.95rem; margin-bottom: 0.2rem;" id="modalMatchSummary">ניתוח התאמה חכם</div>
+            <div style="font-size: 0.82rem; color: var(--text-secondary);" id="modalMatchReasoning"></div>
+          </div>
+        </div>
+
+        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.25rem;">
+          <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--accent-cyan);">
+            מכתב פנייה מותאם אישית (Cover Letter) שה-AI יצר עבור החברה:
+          </label>
+          <textarea id="modalCoverLetter" class="input-field" rows="6" style="width: 100%; font-size: 0.9rem; line-height: 1.5;"></textarea>
+          <small style="color: var(--text-muted); font-size: 0.75rem;">* מכתב זה מדגיש את מגוריך בצפון ואת התאמתך המדויקת לדרישות המשרה. ניתן לערוך בחופשיות.</small>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: var(--radius-md); margin-bottom: 1.5rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+            <span style="font-size: 0.85rem; font-weight: 500;">קובץ קו"ח שיצורף לטופס: <strong id="modalCvAttached">קורות חיים פעילים</strong></span>
+          </div>
+          <span style="font-size: 0.75rem; color: #34d399; font-weight: 600;">מוכן לשליחה</span>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+          <button class="btn btn-secondary" id="btnCancelReview">ביטול</button>
+          <button class="btn btn-primary" id="btnConfirmApply" style="padding: 0.75rem 2rem;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            <span>🚀 הגש מועמדות בדפדפן עכשיו</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Add Manual Job -->
+  <div class="modal-overlay" id="manualJobModal">
+    <div class="modal-window" style="max-width: 550px;">
+      <div class="modal-header">
+        <h2 style="font-size: 1.2rem; font-weight: 700;">הוספת קישור משרה ידני</h2>
+        <button class="modal-close" id="btnCloseManualModal">&times;</button>
+      </div>
+      <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
+        מצאת משרה מעניינת בלינקדאין, Comeet, Greenhouse או באתר חברה? הדבק את הקישור כאן והסוכן ינתח אותה, יכין מכתב וימלא את הטופס עבורך:
+      </p>
+      <input type="url" id="manualJobUrlInput" class="input-field" placeholder="https://www.linkedin.com/jobs/view/... או https://comeet.com/jobs/..." style="width: 100%; margin-bottom: 1.25rem;">
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+        <button class="btn btn-secondary" id="btnCancelManual">ביטול</button>
+        <button class="btn btn-primary" id="btnSubmitManual">
+          <span>נתח והוסף לסוכן</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: LinkedIn Connect Options -->
+  <div class="modal-overlay" id="loginModal">
+    <div class="modal-window" style="max-width: 520px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.6rem;">
+          <h2 style="font-size: 1.25rem; font-weight: 700;">🔑 חיבור מאובטח לחשבון LinkedIn</h2>
+          <span id="loginStatusPill" class="status-badge" style="font-size: 0.75rem; padding: 0.2rem 0.6rem;">בודק...</span>
+        </div>
+        <button class="modal-close" id="btnCloseLoginModal">&times;</button>
+      </div>
+
+      <div style="background: rgba(56, 189, 248, 0.05); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 1.25rem;">
+        <h3 style="font-size: 1.15rem; font-weight: 700; color: #fff; margin-bottom: 0.4rem;">
+          התחברות ישירה לחשבון LinkedIn
+        </h3>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1rem;">
+          הזן את סיסמת הלינקדאין שלך. הסוכן יתחבר ישירות, ישמור את החיבור במחשב שלך, ומאותו רגע יבצע את כל ההגשות:
+        </p>
+
+        <form id="directLoginForm" style="display: flex; flex-direction: column; gap: 0.85rem;">
+          <div>
+            <label style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.3rem;">אימייל של חשבון LinkedIn</label>
+            <input type="email" id="inputLinkedInEmail" class="input-field" placeholder="your_email@gmail.com" value="" style="width: 100%;" required>
+          </div>
+          <div>
+            <label style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.3rem;">סיסמת LinkedIn</label>
+            <input type="password" id="inputLinkedInPassword" class="input-field" placeholder="הזן את הסיסמה שלך כאן" style="width: 100%;" required>
+          </div>
+          <div style="display: flex; gap: 0.5rem; margin-top: 0.25rem;">
+            <button type="submit" class="btn btn-primary" id="btnSubmitDirectLogin" style="flex: 1; padding: 0.85rem; font-size: 1rem; font-weight: 700; justify-content: center;">
+              <span>🚀 התחבר עכשיו לחשבון</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: var(--radius-md); padding: 0.85rem 1rem; font-size: 0.85rem; color: #34d399; display: flex; align-items: center; gap: 0.6rem;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+        <span>100% מאובטח ומקומי על המחשב שלך בלבד.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Settings -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal-window" style="max-width: 600px;">
+      <div class="modal-header">
+        <h2 style="font-size: 1.2rem; font-weight: 700;">הגדרות סוכן המשרות</h2>
+        <button class="modal-close" id="btnCloseSettingsModal">&times;</button>
+      </div>
+      <form id="settingsForm" style="display: flex; flex-direction: column; gap: 1.25rem;">
+        <div>
+          <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.35rem;">מצב פעולה (Automation Mode)</label>
+          <select id="settingMode" class="select-field" style="width: 100%;">
+            <option value="review_first">חצי-אוטומטי: סורק, מכין את הטופס ומבקש אישור לפני הגשה (מומלץ ובטוח)</option>
+            <option value="auto_apply">אוטומטי מלא: מגיש ישירות משרות עם התאמה גבוהה</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.35rem;">נראות דפדפן בעת הגשה (Headful Browser)</label>
+          <select id="settingHeadless" class="select-field" style="width: 100%;">
+            <option value="false">דפדפן גלוי (צפייה בזמן אמת בסוכן ממלא את הטופס ומעלה קו"ח)</option>
+            <option value="true">דפדפן שקט ברקע (Headless)</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.35rem;">אזורי יעד מבוקשים בצפון (מופרדים בפסיקים)</label>
+          <input type="text" id="settingLocations" class="input-field" style="width: 100%;" value="חיפה, מת&quot;ם, נשר, יקנעם, כרמיאל, קריות, עפולה, צפון">
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.35rem;">תפקידים ומילות מפתח לחיפוש</label>
+          <input type="text" id="settingRoles" class="input-field" style="width: 100%;" value="Junior Software, Student Software, Java, Python, React, Web Developer, QA Automation">
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.35rem;">
+            מפתח Google Gemini API (להבנה עמוקה, ניתוח חכם של משרות ומענה לשאלות)
+          </label>
+          <input type="password" id="settingApiKey" class="input-field" style="width: 100%;" placeholder="AIzaSy... (אופציונלי - מאפשר בינה מלאכותית מלאה)">
+          <small style="color: var(--text-muted); font-size: 0.75rem; display: block; margin-top: 4px;">
+            * ניתן להפיק מפתח בחינם מ-<a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: var(--accent-cyan); text-decoration: underline;">Google AI Studio</a>.
+          </small>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1rem;">
+          <button type="button" class="btn btn-secondary" id="btnCancelSettings">סגור</button>
+          <button type="submit" class="btn btn-primary">שמור שינויים</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/static/app.js?v=3.0"></script>
+</body>
+</html>
